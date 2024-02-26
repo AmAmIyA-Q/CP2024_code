@@ -8,13 +8,15 @@ int fibonacci(int n) {
 
 int main() {
 
-    int num;
-    num = [7,15,31];
+    int num[] = {7, 15, 31};
     
     std::cout << "Fibonacci Series: ";
-    for (int i = 0; i < num; i++) {
-        std::cout << fibonacci(i) << " ";
+    for (int i = 0; i < 3; i++) {
+        std::cout << fibonacci(num[i]) << " ";
     }
 
     return 0;
 }
+
+// Output
+// Fibonacci Series: 13 610 1346269 
