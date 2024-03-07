@@ -1,3 +1,5 @@
+import numpy as np
+
 class IsingSpin:
     def __init__(self):
         self.sz = 1  # 默认构造函数，将自旋初始化为+1
@@ -29,3 +31,4 @@ class IsingSpin:
 
 # ising_spin.flip()
 # print("After flipping:", ising_spin.get_sz())
+
