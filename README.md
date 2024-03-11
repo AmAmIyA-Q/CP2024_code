@@ -3,7 +3,7 @@
 
 ## 3.11
 - check CP2024_code/python/Pytest_For_IsingSystem folder
-- unit test is executed and its results are in 1-ResultCheck-week3.ipynb
+- unit test is executed and its results are in Pytest.ipynb
 - Unit test code is in Pytest.py
 - Pytest.py, IsingSystemClass.py is needed
 
