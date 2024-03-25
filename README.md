@@ -1,6 +1,11 @@
 - Name：Guanju Yan 
 - Student ID：521432910010
 
+## 3.25 improvement
+- Check CP2024_code/FastIsingLattice/
+- Results are in 1-ResultCheck.ipynb
+- 6min -> 2.99min
+
 ## 3.24
 - Check CP2024_code/IsingLattice/
 - Results are in 1-ResultCheck.ipynb
