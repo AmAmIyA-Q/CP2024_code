@@ -6,7 +6,7 @@
 - Results are in 1-ResultCheck.ipynb
 - Unit test result:
 
-============================= test session starts =============================
+====== test session starts 
 
 platform win32 -- Python 3.11.5, pytest-8.1.1, pluggy-1.4.0
 rootdir: d:\BaiduSyncdisk\大二下物理系\2计算物理\CP2024_code\IsingLattice
@@ -15,9 +15,10 @@ collected 8 items
 
 Pytest_week3_true.py ........                                            [100%]
 
-============================== 8 passed in 0.45s ==============================
+======= 8 passed in 0.45s 
 
 - $C_v$ and $\langle M^2\rangle$ results for $n=2,3,4$:
+
 ![alt text](https://img2.imgtp.com/2024/03/25/Q1Jh4LXI.png)
 
 ## 3.11
