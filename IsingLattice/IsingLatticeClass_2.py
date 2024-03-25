@@ -144,92 +144,67 @@ class IsingLattice:
         # plt.savefig('/home/sjtu/Workplace_ygj/CP2024_code/picture/data/{}.jpg'.format(save_name), dpi=300, bbox_inches='tight')
         plt.show()
 
-    def all_state_energy(self):
-        # 返回晶格中所有可能状态的能量
-        self.all_energy = []
-        for i in tqdm(range(2 ** (self.num_rows * self.num_cols))):
-            self.set_spin_configuration(i)
-            self.all_energy.append(self.calculate_total_energy())
-        return self.all_energy
+
+def property_compute(T, num_rows, num_cols, J=1, 
+                     compute_H=False, compute_H2=False, compute_M=False, compute_M2=False, compute_C=False):
+
+    kb = 1
+    beta = 1 / (kb * T)
+    if compute_C:
+        compute_H = True
+    if compute_M2:
+        compute_M = True
+        compute_H = True
+    if compute_H2:
+        compute_H = True
+    if compute_C:
+        compute_H = True
+        compute_H2 = True
+
+    property_dict_all = []
+    for n in range(len(num_rows)):
+        all_H = []
+        all_M = []
+        system = IsingLattice(num_rows[n], num_cols[n])
+        system.change_J(J)
+        item_loader = range(2 ** (num_rows[n] * num_cols[n]))
+
+        # TODO
+        with tqdm(total=len(item_loader)) as _tqdm:
+            _tqdm.set_description('Computing N={}*{}'.format(num_rows[n], num_cols[n]))
+
+            for i in item_loader:
+
+                system.set_spin_configuration(i)
+                if compute_H:
+                    all_H.append(system.calculate_total_energy())
+                if compute_M:
+                    all_M.append(system.calculate_total_magnetization())
+                _tqdm.update(1)
+
+            all_H = np.array(all_H)
+            all_M = np.array(all_M)
+
+        property_dict_T = []
+        for j in range(len(T)):
+            property_dict = {}
+
+            if compute_H:
+                property_dict['Z'] = np.sum(np.exp(-all_H*beta[j]))
+                property_dict['average_H'] = np.sum(all_H*np.exp(-all_H*beta[j])) / property_dict['Z']
+            if compute_H2:
+                property_dict['average_H2'] = np.sum(all_H**2*np.exp(-all_H*beta[j]) ) / property_dict['Z']
+            if compute_M:
+                property_dict['average_M'] = np.sum(all_M*np.exp(-all_H*beta[j]) ) / property_dict['Z'] / system.num_spins()
+            if compute_M2:
+                property_dict['average_M2'] = np.sum(all_M**2*np.exp(-all_H*beta[j]) ) / property_dict['Z'] / system.num_spins()**2
+            if compute_C:
+                property_dict['average_C'] = (property_dict['average_H2'] - property_dict['average_H']**2) / (kb * T[j]**2) / system.num_spins()
+
+            property_dict_T.append(property_dict)
+        property_dict_all.append(property_dict_T)
+
+    return property_dict_all
     
-    def all_state_magnetization(self):
-        # 返回晶格中所有可能状态的磁矩
-        self.all_magnetization = []
-        for i in tqdm(range(2 ** (self.num_rows * self.num_cols))):
-            self.set_spin_configuration(i)
-            self.all_magnetization.append(self.calculate_total_magnetization())
-        return self.all_magnetization
-
-    def all_property_compute(self, T, 
-                             compute_H=False,
-                             compute_H2=False, 
-                             compute_M=False,
-                             compute_M2=False,
-                             compute_C=False,):
-        # 返回晶格中所有可能状态的能量和磁矩
-
-        kb = 1
-        beta = 1 / (kb * T)
-        if compute_C:
-            compute_H = True
-        if compute_M2:
-            compute_M = True
-            compute_H = True
-        if compute_H2:
-            compute_H = True
-        if compute_C:
-            compute_H = True
-            compute_H2 = True
-
-        self.all_energy = []
-        self.all_magnetization = []
-
-        if compute_H:
-            for i in range(2 ** (self.num_rows * self.num_cols)):
-                self.set_spin_configuration(i)
-                self.all_energy.append(self.calculate_total_energy())
-
-        if compute_M:
-            for i in range(2 ** (self.num_rows * self.num_cols)):
-                self.set_spin_configuration(i)
-                self.all_magnetization.append(self.calculate_total_magnetization())
-
-        self.all_energy = np.array(self.all_energy)
-        self.all_magnetization = np.array(self.all_magnetization)
-
-        property_dict = {}
-
-        if compute_H:
-            property_dict['Z'] = np.sum(np.exp(-np.array(self.all_energy)*beta))
-            property_dict['average_H'] = np.sum(self.all_energy*np.exp(-np.array(self.all_energy)*beta) / property_dict['Z'])
-        if compute_H2:
-            property_dict['average_H2'] = np.sum(self.all_energy**2*np.exp(-np.array(self.all_energy)*beta) / property_dict['Z'])
-        if compute_M:
-            property_dict['average_M'] = np.sum(self.all_magnetization*np.exp(-np.array(self.all_energy)*beta) / property_dict['Z'])
-        if compute_M2:
-            property_dict['average_M2'] = np.sum(self.all_magnetization**2*np.exp(-np.array(self.all_energy)*beta) \
-                                                 / property_dict['Z']) / self.num_spins()**2
-        if compute_C:
-            property_dict['average_C'] = (property_dict['average_H2'] - property_dict['average_H']**2) / (T**2) / self.num_spins()
-
-        return property_dict
-    
-
-# # Example usage:
-# rows = 4
-# cols = 4
-# system = IsingSystem(rows, cols)
-
-# configurations = [7, 77, 777]
-
-# for config in configurations:
-#     system.set_spin_configuration(config)
-#     M = system.calculate_total_magnetization()
-#     E = system.calculate_total_energy()
-#     print(f"For configuration {config}:")
-#     print(system.get_spin_state())
-#     print(f"Total Magnetization: {M}")
-#     print(f"Total Energy: {E}")
-#     print()
 
 

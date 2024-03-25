@@ -17,9 +17,9 @@ Pytest_week3_true.py ........                                            [100%]
 
 ======= 8 passed in 0.45s 
 
-- $C_v$ and $\langle M^2\rangle$ results for $n=2,3,4$:
+- $C_v$ and $\langle M^2\rangle$ results for $n=2,3,4,5$:
 
-![alt text](https://img2.imgtp.com/2024/03/25/Q1Jh4LXI.png)
+![alt text](https://img2.imgtp.com/2024/03/25/do8Bw5f8.png)
 
 ## 3.11
 - check CP2024_code/python/Pytest_For_IsingSystem folder
