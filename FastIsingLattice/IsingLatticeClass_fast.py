@@ -209,30 +209,8 @@ def property_compute(T, num_rows, num_cols, J=1,
 
     return property_dict_all
     
-@njit
-def get_config(i, num_rows, num_cols):
-    config = np.zeros((num_rows, num_cols))
-    for j in range(num_rows * num_cols):
-        config[j // num_cols, j % num_cols] = (i >> j) & 1
-    config = 2 * config - 1
-    return config
 
-@njit
-def pure_calculate_total_energy(config, J, num_rows, num_cols):
-    # 计算晶格的总能量
-    energy = 0
-    for i in range(num_rows):
-        for j in range(num_cols):
-            energy += -J * config[i, j] * (config[(i + 1) % num_rows, j] +
-                                           config[i, (j + 1) % num_cols] +
-                                           config[(i - 1) % num_rows, j] +
-                                           config[i, (j - 1) % num_cols])
-    return energy / 2
 
-@njit
-def pure_calculate_total_magnetization(config, num_rows, num_cols):
-    # 计算晶格的总磁矩
-    return np.sum(config)
 
 
 @njit
@@ -254,34 +232,51 @@ def property_pure_compute_jit(T, num_rows, num_cols, J=1,
 
     property_dict = np.zeros((len(num_rows), len(T), 6))
     for n in range(len(num_rows)):
-        all_H = np.zeros(2 ** (num_rows[n] * num_cols[n]))
-        all_M = np.zeros(2 ** (num_rows[n] * num_cols[n]))
+        now_H = 0
+        now_M = 0
 
         for i in range(2 ** (num_rows[n] * num_cols[n])):
 
-            config = get_config(i, num_rows[n], num_cols[n])
-            if compute_H:
-                all_H[i] = pure_calculate_total_energy(config, J, num_rows[n], num_cols[n])
-            if compute_M:
-                all_M[i] = pure_calculate_total_magnetization(config, num_rows[n], num_cols[n])
+            config = np.zeros((num_rows[n], num_cols[n]))
+            for j in range(num_rows[n] * num_cols[n]):
+                config[j // num_cols[n], j % num_cols[n]] = (i >> j) & 1
+            config = 2 * config - 1
 
-        num_spins = num_rows[n] * num_cols[n]
+            if compute_H:
+                now_H = 0
+
+                for ii in range(num_rows[n]):
+                    for j in range(num_cols[n]):
+                        now_H = now_H -J / 2 * config[ii, j] * (config[(ii + 1) % num_rows[n], j] +
+                                                    config[ii, (j + 1) % num_cols[n]] +
+                                                    config[(ii - 1) % num_rows[n], j] +
+                                                    config[ii, (j - 1) % num_cols[n]])
+            if compute_M:
+                now_M = np.sum(config)
+            config = None
+
+            num_spins = num_rows[n] * num_cols[n]
+
+            for j in range(len(T)):
+
+                # results[n][T][6]
+                if compute_H:
+                    property_dict[n, j, 0] += np.exp(-now_H * beta[j])
+                    property_dict[n, j, 1] += now_H * np.exp(-now_H * beta[j])
+                if compute_H2:
+                    property_dict[n, j, 2] += now_H**2 * np.exp(-now_H * beta[j])
+                if compute_M:
+                    property_dict[n, j, 3] += now_M * np.exp(-now_H * beta[j]) / num_spins
+                if compute_M2:
+                    property_dict[n, j, 4] += now_M**2 * np.exp(-now_H * beta[j]) / num_spins**2
 
         for j in range(len(T)):
+            property_dict[n, j, 1] /= property_dict[n, j, 0]
+            property_dict[n, j, 2] /= property_dict[n, j, 0]
+            property_dict[n, j, 3] /= property_dict[n, j, 0]
+            property_dict[n, j, 4] /= property_dict[n, j, 0]
 
-            # 0 1         2          3         4          5
-            # Z average_H average_H2 average_M average_M2 average_C
-            if compute_H:
-                property_dict[n][j][0] = np.sum(np.exp(-all_H*beta[j]))
-                property_dict[n][j][1] = np.sum(all_H*np.exp(-all_H*beta[j])) / property_dict[n][j][0]
-            if compute_H2:
-                property_dict[n][j][2] = np.sum(all_H**2*np.exp(-all_H*beta[j])) / property_dict[n][j][0]
-            if compute_M:
-                property_dict[n][j][3] = np.sum(all_M*np.exp(-all_H*beta[j])) / property_dict[n][j][0] / num_spins
-            if compute_M2:
-                property_dict[n][j][4] = np.sum(all_M**2*np.exp(-all_H*beta[j])) / property_dict[n][j][0] / num_spins**2
             if compute_C:
-                property_dict[n][j][5] = (property_dict[n][j][2] - property_dict[n][j][1]**2) / (kb * T[j]**2) / num_spins
-
+                property_dict[n, j, 5] = (property_dict[n, j, 2] - property_dict[n, j, 1]**2) / (T[j]**2) 
 
     return property_dict
