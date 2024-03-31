@@ -1,6 +1,12 @@
 - Name：Guanju Yan 
 - Student ID：521432910010
 
+## 3.31
+
+- Github Action results:
+![alt text](https://img2.imgtp.com/2024/03/31/vnu3mDUl.png)
+- .gitignore file created
+
 ## 3.25 improvement
 - Check CP2024_code/FastIsingLattice/
 - Results are in 1-ResultCheck.ipynb
