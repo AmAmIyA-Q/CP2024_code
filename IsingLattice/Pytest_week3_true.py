@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from CP2024_code.IsingLattice.IsingLatticeClass import IsingSpin, IsingLattice
+from IsingLatticeClass import IsingSpin, IsingLattice
 
 @pytest.fixture
 def lattice():
